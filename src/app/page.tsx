@@ -10,7 +10,7 @@ export default function HomePage() {
               <p className="eyebrow">Мини-аркада</p>
               <h1>Выберите игру</h1>
               <p id="hero-subtitle" className="hero__subtitle">
-                Пять классических игр в одном окне: Змейка, Тетрис, 2048, Арканоид и Мемори.
+                Шесть классических игр в одном окне: Змейка, Тетрис, 2048, Арканоид, Мемори и Pong.
               </p>
             </div>
             <div className="scoreboard scoreboard--wide" aria-live="polite">
@@ -61,6 +61,11 @@ export default function HomePage() {
                 <strong>Мемори</strong>
                 <span>Открывайте пары карточек и очищайте поле за минимум ходов.</span>
               </button>
+              <button className="menu-card" type="button" data-select-game="pong">
+                <span className="menu-card__eyebrow">Дуэль</span>
+                <strong>Pong</strong>
+                <span>Удерживайте ракетку, переигрывайте ИИ и не теряйте мячи.</span>
+              </button>
             </div>
           </section>
 
@@ -87,11 +92,15 @@ export default function HomePage() {
               </div>
 
               <div id="arkanoid-view" className="game-view">
-                <canvas id="arkanoid-canvas" className="arkanoid-canvas" width={480} height={320} />
+                <canvas id="arkanoid-canvas" className="arcade-canvas" width={480} height={320} />
               </div>
 
               <div id="memory-view" className="game-view">
                 <div id="memory-board" className="board board--memory" aria-live="polite" />
+              </div>
+
+              <div id="pong-view" className="game-view">
+                <canvas id="pong-canvas" className="arcade-canvas" width={480} height={320} />
               </div>
             </div>
 

@@ -307,7 +307,7 @@ h1 {
   background: #eadfcb;
 }
 
-.arkanoid-canvas {
+.arcade-canvas {
   display: block;
   width: min(100%, 720px);
   aspect-ratio: 3 / 2;
@@ -481,3 +481,4 @@ h1 {
   color: var(--muted);
   background: rgba(214, 206, 191, 0.35);
 }
+

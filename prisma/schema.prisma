@@ -13,6 +13,7 @@ enum GameKey {
   game2048
   arkanoid
   memory
+  pong
 }
 
 model User {

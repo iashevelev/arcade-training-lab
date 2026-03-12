@@ -1,0 +1,1 @@
+ALTER TYPE "GameKey" ADD VALUE IF NOT EXISTS 'pong';

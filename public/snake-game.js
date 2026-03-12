@@ -30,7 +30,8 @@
       tetris: document.querySelector("#tetris-view"),
       2048: document.querySelector("#game2048-view"),
       arkanoid: document.querySelector("#arkanoid-view"),
-      memory: document.querySelector("#memory-view")
+      memory: document.querySelector("#memory-view"),
+      pong: document.querySelector("#pong-view")
     }
   };
 
@@ -67,7 +68,7 @@
   const updateUi = () => {
     if (!currentGame) {
       dom.title.textContent = "Выберите игру";
-      dom.subtitle.textContent = "Пять классических игр в одном окне: Змейка, Тетрис, 2048, Арканоид и Мемори.";
+      dom.subtitle.textContent = "Шесть классических игр в одном окне: Змейка, Тетрис, 2048, Арканоид, Мемори и Pong.";
       dom.status.textContent = "Откройте любую игру из меню ниже.";
       dom.help.textContent = "Выберите игру, чтобы увидеть управление.";
       dom.primaryLabel.textContent = "Игра";
@@ -153,6 +154,11 @@
       board: document.querySelector("#memory-board"),
       onUpdate: updateUi,
       onResult: (score) => queueLeaderboardEntry("memory", score)
+    }),
+    pong: createPongGame({
+      canvas: document.querySelector("#pong-canvas"),
+      onUpdate: updateUi,
+      onResult: (score) => queueLeaderboardEntry("pong", score)
     })
   };
 
@@ -1243,6 +1249,292 @@
           showPause: false,
           showControls: false,
           pauseLabel: "Пауза"
+        };
+      }
+    };
+  }
+
+  function createPongGame({ canvas, onUpdate, onResult }) {
+    const context = canvas.getContext("2d");
+    const paddleInset = 18;
+    const paddleWidth = 10;
+    const paddleHeight = 72;
+    const paddleSpeed = 320;
+    const aiSpeed = 250;
+    const maxLives = 3;
+    let frame = null;
+    let lastTime = 0;
+    let state = initialState();
+
+    render();
+
+    function initialState() {
+      return {
+        playerY: (canvas.height - paddleHeight) / 2,
+        aiY: (canvas.height - paddleHeight) / 2,
+        score: 0,
+        lives: maxLives,
+        started: false,
+        running: false,
+        gameOver: false,
+        resultHandled: false,
+        moveUp: false,
+        moveDown: false,
+        rally: 0,
+        bestRally: 0,
+        ball: createBall(-1)
+      };
+    }
+
+    function createBall(direction) {
+      const speedX = 215 + Math.random() * 30;
+      const speedY = (Math.random() * 150) - 75;
+      return {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        radius: 7,
+        vx: Math.abs(speedX) * direction,
+        vy: speedY
+      };
+    }
+
+    function clampPaddles() {
+      state.playerY = Math.max(12, Math.min(canvas.height - paddleHeight - 12, state.playerY));
+      state.aiY = Math.max(12, Math.min(canvas.height - paddleHeight - 12, state.aiY));
+    }
+
+    function finalizeResult() {
+      if (!state.resultHandled) {
+        state.resultHandled = true;
+        onResult(state.score);
+      }
+    }
+
+    function resetBall(direction) {
+      state.ball = createBall(direction);
+      state.rally = 0;
+    }
+
+    function startLoop() {
+      stopLoop();
+      lastTime = 0;
+      frame = window.requestAnimationFrame(loop);
+    }
+
+    function stopLoop() {
+      if (frame !== null) {
+        window.cancelAnimationFrame(frame);
+        frame = null;
+      }
+    }
+
+    function loop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const delta = Math.min(32, timestamp - lastTime) / 1000;
+      lastTime = timestamp;
+      update(delta);
+      render();
+      if (state.running && !state.gameOver) {
+        frame = window.requestAnimationFrame(loop);
+      } else {
+        frame = null;
+      }
+    }
+
+    function update(delta) {
+      if (!state.running || state.gameOver) {
+        return;
+      }
+
+      const playerDirection = (state.moveDown ? 1 : 0) - (state.moveUp ? 1 : 0);
+      state.playerY += playerDirection * paddleSpeed * delta;
+
+      const aiCenter = state.aiY + paddleHeight / 2;
+      const aiTarget = state.ball.y;
+      if (Math.abs(aiTarget - aiCenter) > 10) {
+        state.aiY += Math.sign(aiTarget - aiCenter) * aiSpeed * delta;
+      }
+      clampPaddles();
+
+      state.ball.x += state.ball.vx * delta;
+      state.ball.y += state.ball.vy * delta;
+
+      if (state.ball.y <= state.ball.radius || state.ball.y >= canvas.height - state.ball.radius) {
+        state.ball.vy *= -1;
+        state.ball.y = Math.max(state.ball.radius, Math.min(canvas.height - state.ball.radius, state.ball.y));
+      }
+
+      const playerLeft = paddleInset;
+      const playerRight = playerLeft + paddleWidth;
+      const aiLeft = canvas.width - paddleInset - paddleWidth;
+      const aiRight = aiLeft + paddleWidth;
+
+      const hitsPlayer = state.ball.vx < 0
+        && state.ball.x - state.ball.radius <= playerRight
+        && state.ball.x - state.ball.radius >= playerLeft
+        && state.ball.y >= state.playerY
+        && state.ball.y <= state.playerY + paddleHeight;
+
+      if (hitsPlayer) {
+        const offset = (state.ball.y - (state.playerY + paddleHeight / 2)) / (paddleHeight / 2);
+        state.ball.x = playerRight + state.ball.radius;
+        state.ball.vx = Math.abs(state.ball.vx) + 10;
+        state.ball.vy = offset * 220;
+        state.rally += 1;
+        state.bestRally = Math.max(state.bestRally, state.rally);
+        state.score += 1;
+      }
+
+      const hitsAi = state.ball.vx > 0
+        && state.ball.x + state.ball.radius >= aiLeft
+        && state.ball.x + state.ball.radius <= aiRight
+        && state.ball.y >= state.aiY
+        && state.ball.y <= state.aiY + paddleHeight;
+
+      if (hitsAi) {
+        const offset = (state.ball.y - (state.aiY + paddleHeight / 2)) / (paddleHeight / 2);
+        state.ball.x = aiLeft - state.ball.radius;
+        state.ball.vx = -(Math.abs(state.ball.vx) + 6);
+        state.ball.vy = offset * 200;
+        state.rally += 1;
+        state.bestRally = Math.max(state.bestRally, state.rally);
+      }
+
+      if (state.ball.x - state.ball.radius > canvas.width) {
+        state.score += 5;
+        resetBall(-1);
+      } else if (state.ball.x + state.ball.radius < 0) {
+        state.lives -= 1;
+        if (state.lives <= 0) {
+          state.gameOver = true;
+          state.running = false;
+          finalizeResult();
+        } else {
+          resetBall(1);
+        }
+      }
+
+      onUpdate();
+    }
+
+    function renderNet() {
+      context.fillStyle = "rgba(106, 98, 85, 0.35)";
+      for (let y = 14; y < canvas.height - 14; y += 20) {
+        context.fillRect(canvas.width / 2 - 2, y, 4, 12);
+      }
+    }
+
+    function render() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = "#f6f0e3";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      renderNet();
+
+      context.fillStyle = "#2a241c";
+      context.fillRect(paddleInset, state.playerY, paddleWidth, paddleHeight);
+      context.fillRect(canvas.width - paddleInset - paddleWidth, state.aiY, paddleWidth, paddleHeight);
+
+      context.beginPath();
+      context.fillStyle = "#bb3e2f";
+      context.arc(state.ball.x, state.ball.y, state.ball.radius, 0, Math.PI * 2);
+      context.fill();
+      context.closePath();
+
+      context.fillStyle = "#6a6255";
+      context.font = "16px Segoe UI";
+      if (!state.started) context.fillText("Нажмите пробел, чтобы начать Pong.", 128, 154);
+      else if (state.gameOver) context.fillText("Матч окончен. Нажмите пробел для новой игры.", 86, 154);
+      else if (!state.running) context.fillText("Пауза. Нажмите P или кнопку «Пауза».", 92, 154);
+    }
+
+    function startNewGame() {
+      stopLoop();
+      state = initialState();
+      state.started = true;
+      state.running = true;
+      render();
+      startLoop();
+      onUpdate();
+    }
+
+    function movePaddleStep(direction) {
+      state.playerY += direction * 28;
+      clampPaddles();
+      render();
+      onUpdate();
+    }
+
+    return {
+      activate() { stopLoop(); state = initialState(); render(); onUpdate(); },
+      deactivate() {
+        state.moveUp = false;
+        state.moveDown = false;
+        stopLoop();
+      },
+      restart() { startNewGame(); },
+      togglePause() {
+        if (!state.started || state.gameOver) return;
+        state.running = !state.running;
+        state.running ? startLoop() : stopLoop();
+        onUpdate();
+      },
+      handleKey(event) {
+        const key = String(event.key || "").toLowerCase();
+        if (event.code === "Space" || key === " ") {
+          event.preventDefault();
+          if (!state.started || state.gameOver) startNewGame();
+          return true;
+        }
+        if (key === "p" || key === "з") {
+          event.preventDefault();
+          this.togglePause();
+          return true;
+        }
+        if (key === "arrowup" || key === "w" || key === "ц") {
+          event.preventDefault();
+          if (!state.started || state.gameOver) startNewGame();
+          state.moveUp = true;
+          state.moveDown = false;
+          return true;
+        }
+        if (key === "arrowdown" || key === "s" || key === "ы") {
+          event.preventDefault();
+          if (!state.started || state.gameOver) startNewGame();
+          state.moveDown = true;
+          state.moveUp = false;
+          return true;
+        }
+        return false;
+      },
+      handleKeyUp(event) {
+        const key = String(event.key || "").toLowerCase();
+        if (key === "arrowup" || key === "w" || key === "ц") {
+          state.moveUp = false;
+          return true;
+        }
+        if (key === "arrowdown" || key === "s" || key === "ы") {
+          state.moveDown = false;
+          return true;
+        }
+        return false;
+      },
+      handleControl(action) {
+        if (action === "up") movePaddleStep(-1);
+        else if (action === "down") movePaddleStep(1);
+      },
+      getSnapshot() {
+        return {
+          title: "Pong",
+          subtitle: "Отбивайте мяч, набирайте очки на возвратах и переигрывайте ИИ.",
+          status: state.gameOver ? "Мячи закончились. Нажмите пробел или «Новая игра»." : !state.started ? "Нажмите пробел, чтобы начать матч." : state.running ? "Держите ракетку на линии мяча и не давайте ему уйти за край." : "Пауза. Нажмите P или кнопку «Пауза».",
+          help: "Пробел: новая игра. W/S или ↑/↓: движение ракетки. P: пауза.",
+          primaryLabel: "Счет",
+          primaryValue: state.score,
+          secondaryLabel: "Жизни",
+          secondaryValue: state.lives,
+          canPause: state.started && !state.gameOver,
+          showPause: true,
+          pauseLabel: state.running ? "Пауза" : "Продолжить"
         };
       }
     };
