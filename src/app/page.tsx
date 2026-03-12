@@ -5,14 +5,23 @@ export default function HomePage() {
     <>
       <main className="app">
         <section className="panel">
+          <div className="panel__glow panel__glow--left" aria-hidden="true" />
+          <div className="panel__glow panel__glow--right" aria-hidden="true" />
+
           <header className="hero">
-            <div>
+            <div className="hero__copy">
               <p className="eyebrow">Мини-аркада</p>
               <h1>Выберите игру</h1>
               <p id="hero-subtitle" className="hero__subtitle">
                 Шесть классических игр в одном окне: Змейка, Тетрис, 2048, Арканоид, Мемори и Pong.
               </p>
+              <div className="hero__facts" aria-label="Краткая информация">
+                <span className="hero__fact">6 игр</span>
+                <span className="hero__fact">Общий топ-10</span>
+                <span className="hero__fact">Клавиатура и тач</span>
+              </div>
             </div>
+
             <div className="scoreboard scoreboard--wide" aria-live="polite">
               <div className="scoreboard__item">
                 <span id="primary-score-label" className="scoreboard__label">Игра</span>
@@ -35,33 +44,52 @@ export default function HomePage() {
           </div>
 
           <section id="menu-screen" className="screen screen--active" aria-label="Меню выбора игр">
+            <div className="menu-intro">
+              <div className="menu-intro__card">
+                <span className="menu-intro__label">Подсказка</span>
+                <strong>Начните с любой карточки</strong>
+                <p>Прогресс по очкам сразу сохраняется в общий серверный рейтинг.</p>
+              </div>
+              <div className="menu-intro__card">
+                <span className="menu-intro__label">Управление</span>
+                <strong>Работает на десктопе и на тач-экране</strong>
+                <p>Стрелки, WASD и экранные кнопки подстраиваются под выбранную игру.</p>
+              </div>
+            </div>
+
             <div className="menu-grid">
               <button className="menu-card" type="button" data-select-game="snake">
+                <span className="menu-card__icon" aria-hidden="true">S</span>
                 <span className="menu-card__eyebrow">Классика</span>
                 <strong>Змейка</strong>
                 <span>Растите, собирайте еду и не врезайтесь в стены.</span>
               </button>
               <button className="menu-card" type="button" data-select-game="tetris">
+                <span className="menu-card__icon" aria-hidden="true">T</span>
                 <span className="menu-card__eyebrow">Пазл</span>
                 <strong>Тетрис</strong>
                 <span>Собирайте линии и не дайте стакану заполниться.</span>
               </button>
               <button className="menu-card" type="button" data-select-game="2048">
+                <span className="menu-card__icon menu-card__icon--wide" aria-hidden="true">2048</span>
                 <span className="menu-card__eyebrow">Логика</span>
                 <strong>2048</strong>
                 <span>Складывайте одинаковые плитки и доберитесь до 2048.</span>
               </button>
               <button className="menu-card" type="button" data-select-game="arkanoid">
+                <span className="menu-card__icon" aria-hidden="true">A</span>
                 <span className="menu-card__eyebrow">Аркада</span>
                 <strong>Арканоид</strong>
                 <span>Отбивайте мяч, ломайте блоки и берегите жизни.</span>
               </button>
               <button className="menu-card" type="button" data-select-game="memory">
+                <span className="menu-card__icon" aria-hidden="true">M</span>
                 <span className="menu-card__eyebrow">Память</span>
                 <strong>Мемори</strong>
                 <span>Открывайте пары карточек и очищайте поле за минимум ходов.</span>
               </button>
               <button className="menu-card" type="button" data-select-game="pong">
+                <span className="menu-card__icon" aria-hidden="true">P</span>
                 <span className="menu-card__eyebrow">Дуэль</span>
                 <strong>Pong</strong>
                 <span>Удерживайте ракетку, переигрывайте ИИ и не теряйте мячи.</span>
@@ -104,17 +132,21 @@ export default function HomePage() {
               </div>
             </div>
 
-            <section className="controls" aria-label="Экранные кнопки управления">
-              <div id="control-pad" className="controls__grid">
-                <button className="control" type="button" data-control="up">↑</button>
-                <button className="control" type="button" data-control="left">←</button>
-                <button className="control" type="button" data-control="down">↓</button>
-                <button className="control" type="button" data-control="right">→</button>
-              </div>
-            </section>
+            <section className="utility-row">
+              <section className="controls" aria-label="Экранные кнопки управления">
+                <p className="utility-row__label">Быстрое управление</p>
+                <div id="control-pad" className="controls__grid">
+                  <button className="control" type="button" data-control="up">↑</button>
+                  <button className="control" type="button" data-control="left">←</button>
+                  <button className="control" type="button" data-control="down">↓</button>
+                  <button className="control" type="button" data-control="right">→</button>
+                </div>
+              </section>
 
-            <section className="help">
-              <p id="help-text">Выберите игру, чтобы увидеть управление.</p>
+              <section className="help">
+                <p className="utility-row__label">Подсказка</p>
+                <p id="help-text">Выберите игру, чтобы увидеть управление.</p>
+              </section>
             </section>
 
             <section id="leaderboard-panel" className="leaderboard">
