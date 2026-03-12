@@ -255,7 +255,7 @@
     void refreshLeaderboard(gameId, false);
   }
 
-  async function fetchWithTimeout(url, options = {}, timeoutMs = 3000) {
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
@@ -263,6 +263,22 @@
     } finally {
       window.clearTimeout(timer);
     }
+  }
+
+  async function fetchWithRetry(url, options = {}, timeoutMs = 12000, retries = 1, retryDelayMs = 1500) {
+    let lastError = null;
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+      try {
+        return await fetchWithTimeout(url, options, timeoutMs);
+      } catch (error) {
+        lastError = error;
+        if (attempt === retries) {
+          break;
+        }
+        await new Promise((resolve) => window.setTimeout(resolve, retryDelayMs));
+      }
+    }
+    throw lastError || new Error("Network request failed");
   }
 
   function renderLeaderboard(gameId) {
@@ -339,7 +355,7 @@
     }
 
     try {
-      const response = await fetchWithTimeout(`${LEADERBOARD_API_BASE}/api/leaderboard?game=${encodeURIComponent(gameId)}`);
+      const response = await fetchWithRetry(`${LEADERBOARD_API_BASE}/api/leaderboard?game=${encodeURIComponent(gameId)}`);
       if (!response.ok) {
         throw new Error(`Leaderboard GET failed: ${response.status}`);
       }
@@ -364,7 +380,7 @@
   }
 
   async function submitLeaderboardEntry(gameId, name, score) {
-    const response = await fetchWithTimeout(`${LEADERBOARD_API_BASE}/api/leaderboard`, {
+    const response = await fetchWithRetry(`${LEADERBOARD_API_BASE}/api/leaderboard`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
