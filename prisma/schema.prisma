@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GameKey {
+  snake
+  tetris
+  game2048
+  arkanoid
+  memory
+}
+
+model User {
+  id        Int                @id @default(autoincrement())
+  email     String             @unique
+  name      String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  results   LeaderboardEntry[]
+}
+
+model LeaderboardEntry {
+  id        Int      @id @default(autoincrement())
+  game      GameKey
+  name      String
+  score     Int
+  createdAt DateTime @default(now())
+
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([game, score])
+  @@index([userId])
+  @@index([createdAt])
+}
