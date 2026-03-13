@@ -1,8 +1,8 @@
 :root {
   color-scheme: light;
-  --bg-0: #f4f7fb;
-  --bg-1: #e8eef8;
-  --bg-2: #dce7f5;
+  --bg-0: #eef7f1;
+  --bg-1: #d9ecdf;
+  --bg-2: #c4dfcd;
   --panel: rgba(255, 255, 255, 0.68);
   --panel-strong: rgba(255, 255, 255, 0.82);
   --panel-soft: rgba(247, 250, 255, 0.72);
@@ -14,13 +14,13 @@
   --accent-soft: rgba(47, 109, 246, 0.12);
   --accent-strong: #1755dc;
   --shadow: rgba(56, 77, 110, 0.15);
-  --glow-a: rgba(105, 168, 255, 0.26);
-  --glow-b: rgba(190, 218, 255, 0.34);
+  --glow-a: rgba(114, 201, 156, 0.28);
+  --glow-b: rgba(189, 233, 205, 0.34);
   --snake: #1d7f4f;
   --snake-head: #13653d;
   --food: #ff5c6b;
   --cell: #e8edf5;
-  --canvas: linear-gradient(180deg, #f4f7fc 0%, #e7eef7 100%);
+  --canvas: linear-gradient(180deg, #f3faf5 0%, #e0eee5 100%);
   --control-bg: rgba(255, 255, 255, 0.8);
   --cell-size: min(4.8vw, 22px);
 }
@@ -39,9 +39,9 @@ body {
   font-family: "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at 0% 0%, rgba(194, 223, 255, 0.72), transparent 28%),
-    radial-gradient(circle at 100% 18%, rgba(220, 232, 255, 0.9), transparent 30%),
-    radial-gradient(circle at 50% 100%, rgba(213, 225, 245, 0.82), transparent 28%),
+    radial-gradient(circle at 0% 0%, rgba(177, 229, 193, 0.78), transparent 28%),
+    radial-gradient(circle at 100% 18%, rgba(212, 244, 221, 0.92), transparent 30%),
+    radial-gradient(circle at 50% 100%, rgba(187, 222, 196, 0.86), transparent 28%),
     linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 48%, var(--bg-2) 100%);
 }
 
@@ -790,3 +790,4 @@ h2 {
     min-height: 56px;
   }
 }
+
